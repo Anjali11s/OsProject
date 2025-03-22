@@ -73,6 +73,36 @@
     transform: scale(0.95);
     box-shadow: 1px 2px 6px rgba(255, 75, 92, 0.5);
 }
+.edit-btn {
+    /* background: rgba(75, 255, 92, 0.2); */
+    background: rgb(71, 255, 71);
+    color: green;
+    border: 1.5px solid green;
+    padding: 4px 8px;  /* Even smaller height */
+    margin: 8px;
+    width: 100px;
+    /* margin-left: 10px; */
+    border-radius: 8px; 
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 14px;
+    transition: all 0.2s ease-in-out;
+    backdrop-filter: blur(5px);
+    box-shadow: 1px 2px 6px rgba(75, 255, 92, 0.25);
+}
+
+.edit-btn:hover {
+    background: green;
+    color: white;
+    border: 1.5px solid rgba(75, 255, 92, 0.7);
+    box-shadow: 2px 3px 8px rgba(75, 255, 92, 0.4);
+    transform: scale(1.05); 
+}
+
+.edit-btn:active {
+    transform: scale(0.95);
+    box-shadow: 1px 2px 6px rgba(75, 255, 92, 0.5);
+}
 
 
 
@@ -161,233 +191,254 @@
     
     function deleteTask(event) {
         event.target.parentElement.remove();
+        let taskId = event.target.parentElement.getAttribute("data-task-id");
+        tasks = tasks.filter(task => task.id != taskId); // Remove from tasks array
     }
 
     function clearTasks() {
         document.getElementById("taskList").innerHTML = "";
+        tasks = [];
+        lastEvents = [];
+        let canvas = document.getElementById("ganttChart");
+        let ctx = canvas.getContext("2d");
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
     }
 
     function addTask() {
-    const id = document.getElementById("taskId").value;
-    const exec = parseFloat(document.getElementById("executionTime").value);
-    const deadlineInput = document.getElementById("deadline").value;
-    const period = parseInt(document.getElementById("period").value);
+        const id = document.getElementById("taskId").value;
+        const exec = parseFloat(document.getElementById("executionTime").value);
+        const deadlineInput = document.getElementById("deadline").value;
+        const period = parseInt(document.getElementById("period").value);
     
-    if (!id || isNaN(exec) || isNaN(period)) {
-        alert("Please fill Task ID, Execution Time, and Period fields.");
-        return;
+        if (!id || isNaN(exec) || isNaN(period)) {
+            alert("Please fill Task ID, Execution Time, and Period fields.");
+            return;
+        }
+    
+        let deadline = deadlineInput ? parseInt(deadlineInput) : period;
+        const task = {
+            id: parseInt(id),
+            executionTime: exec,
+            deadline: deadline,
+            period: period,
+            remaining: exec,
+            nextArrival: 0,
+            nextDeadline: deadline
+        };
+        tasks.push(task);
+
+        // Task container
+        const taskDiv = document.createElement("div");
+        taskDiv.classList.add("task-box");
+        taskDiv.setAttribute("data-task-id", task.id); // Store task ID in div for easy removal
+        taskDiv.innerHTML = `Task ${task.id} - Execution: ${task.executionTime}ms - Deadline: ${task.deadline}ms - Period: ${task.period}`;
+    
+        // Edit button
+        const editBtn = document.createElement("button");
+        editBtn.innerText = "Edit";
+        editBtn.classList.add("edit-btn");
+
+        // Edit task on button click
+        editBtn.onclick = function () {
+            const newExec = prompt("Enter new execution time", task.executionTime);
+            const newDeadline = prompt("Enter new deadline", task.deadline);
+            const newPeriod = prompt("Enter new period", task.period);
+
+            if (newExec && newDeadline && newPeriod) {
+                task.executionTime = parseFloat(newExec);
+                task.deadline = parseInt(newDeadline);
+                task.period = parseInt(newPeriod);
+                task.remaining = task.executionTime;
+                
+                // Update the task display
+                taskDiv.innerHTML = `Task ${task.id} - Execution: ${task.executionTime}ms - Deadline: ${task.deadline}ms - Period: ${task.period}`;
+                taskDiv.appendChild(editBtn);
+                taskDiv.appendChild(deleteBtn);
+            }
+        };
+
+        // Delete button
+        const deleteBtn = document.createElement("button");
+        deleteBtn.innerText = "Delete";
+        deleteBtn.classList.add("delete-btn");
+    
+        // Delete task on button click
+        deleteBtn.onclick = function () {
+            taskDiv.remove(); // Remove from UI
+            tasks = tasks.filter(t => t.id !== task.id); // Remove from tasks array
+        };
+
+        // Append buttons to task
+        taskDiv.appendChild(editBtn);
+        taskDiv.appendChild(deleteBtn);
+        document.getElementById("taskList").appendChild(taskDiv);
+
+        // Clear input fields
+        document.getElementById("taskId").value = "";
+        document.getElementById("executionTime").value = "";
+        document.getElementById("deadline").value = "";
+        document.getElementById("period").value = "";
     }
-    
-    let deadline = deadlineInput ? parseInt(deadlineInput) : period;
-    const task = {
-        id: parseInt(id),
-        executionTime: exec,
-        deadline: deadline,
-        period: period,
-        remaining: exec,
-        nextArrival: 0,
-        nextDeadline: deadline
-    };
-    tasks.push(task);
 
-    // Task container
-    const taskDiv = document.createElement("div");
-    taskDiv.classList.add("task-box");
-    taskDiv.innerHTML = `Task ${task.id} - Execution: ${task.executionTime}ms - Deadline: ${task.deadline}ms - Period: ${task.period}`;
-    
-    // Delete button
-    const deleteBtn = document.createElement("button");
-    deleteBtn.innerText = "Delete";
-    deleteBtn.classList.add("delete-btn");
-    
-    // Delete task on button click
-    deleteBtn.onclick = function () {
-        taskDiv.remove(); // Remove from UI
-        tasks.splice(tasks.indexOf(task), 1); // Remove from array
-    };
-
-    // Append button to task
-    taskDiv.appendChild(deleteBtn);
-    document.getElementById("taskList").appendChild(taskDiv);
-
-    // Clear input fields
-    document.getElementById("taskId").value = "";
-    document.getElementById("executionTime").value = "";
-    document.getElementById("deadline").value = "";
-    document.getElementById("period").value = "";
-}
-
-
-
-    
-    function clearTasks() {
-      tasks = [];
-      document.getElementById("taskList").innerHTML = '';
-      document.getElementById("output").textContent = '';
-      lastEvents = [];
-      
-      let canvas = document.getElementById("ganttChart");
-      let ctx = canvas.getContext("2d");
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-    }
-    
     // Draw the Gantt chart on the canvas using the event intervals.
     function drawGanttChart(events, hyperperiod) {
-      const canvas = document.getElementById("ganttChart");
-      const ctx = canvas.getContext("2d");
+        const canvas = document.getElementById("ganttChart");
+        const ctx = canvas.getContext("2d");
 
-      // Set canvas width based on container width for responsiveness.
-      const containerWidth = document.getElementById("ganttContainer").offsetWidth;
-      canvas.width = Math.max(containerWidth, 1200);
-      canvas.height = 200;
-      
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      
-      // Define margins so that 0 and hyperperiod labels are visible.
-      const marginLeft = 30;
-      const marginRight = 10;
-      const usableWidth = canvas.width - marginLeft - marginRight;
-      const scale = usableWidth / hyperperiod;
-      const barHeight = 40;
-      const y = (canvas.height - barHeight) / 2;
-      
-      // Predefined color for idle; assign random colors for tasks.
-      const colors = { "idle": "#cccccc" };
-      events.forEach(ev => {
-        if (ev.label !== "idle" && !colors[ev.label]) {
-          colors[ev.label] = '#' + Math.floor(Math.random() * 16777215).toString(16);
-        }
-      });
-      
-      events.forEach(ev => {
-        const xStart = marginLeft + ev.start * scale;
-        const width = (ev.end - ev.start) * scale;
+        // Set canvas width based on container width for responsiveness.
+        const containerWidth = document.getElementById("ganttContainer").offsetWidth;
+        canvas.width = Math.max(containerWidth, 1200);
+        canvas.height = 200;
         
-        ctx.fillStyle = colors[ev.label] || "#000000";
-        ctx.fillRect(xStart, y, width, barHeight);
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
         
-        ctx.strokeStyle = "#000";
-        ctx.strokeRect(xStart, y, width, barHeight);
+        // Define margins so that 0 and hyperperiod labels are visible.
+        const marginLeft = 30;
+        const marginRight = 10;
+        const usableWidth = canvas.width - marginLeft - marginRight;
+        const scale = usableWidth / hyperperiod;
+        const barHeight = 40;
+        const y = (canvas.height - barHeight) / 2;
         
+        // Predefined color for idle; assign random colors for tasks.
+        const colors = { "idle": "#cccccc" };
+        events.forEach(ev => {
+            if (ev.label !== "idle" && !colors[ev.label]) {
+                colors[ev.label] = '#' + Math.floor(Math.random() * 16777215).toString(16);
+            }
+        });
+        
+        events.forEach(ev => {
+            const xStart = marginLeft + ev.start * scale;
+            const width = (ev.end - ev.start) * scale;
+            
+            ctx.fillStyle = colors[ev.label] || "#000000";
+            ctx.fillRect(xStart, y, width, barHeight);
+            
+            ctx.strokeStyle = "#000";
+            ctx.strokeRect(xStart, y, width, barHeight);
+            
+            ctx.fillStyle = "#000";
+            ctx.font = "14px Arial";
+            ctx.fillText(ev.label, xStart + 5, y + barHeight / 2 + 5);
+        });
+        
+        // the time axis.
         ctx.fillStyle = "#000";
-        ctx.font = "14px Arial";
-        ctx.fillText(ev.label, xStart + 5, y + barHeight / 2 + 5);
-      });
-      
-      // the time axis.
-      ctx.fillStyle = "#000";
-      ctx.font = "12px Arial";
-      const axisY = y + barHeight;
-      ctx.beginPath();
-      ctx.moveTo(marginLeft, axisY);
-      ctx.lineTo(canvas.width - marginRight, axisY);
-      ctx.strokeStyle = "#333";
-      ctx.stroke();
-      
-      for (let t = 0; t <= hyperperiod; t++) {
-        const xPos = marginLeft + t * scale;
+        ctx.font = "12px Arial";
+        const axisY = y + barHeight;
         ctx.beginPath();
-        ctx.moveTo(xPos, axisY);
-        ctx.lineTo(xPos, axisY + 5);
+        ctx.moveTo(marginLeft, axisY);
+        ctx.lineTo(canvas.width - marginRight, axisY);
+        ctx.strokeStyle = "#333";
         ctx.stroke();
-        ctx.fillText(t.toString(), xPos - 3, axisY + 18);
-      }
+        
+        for (let t = 0; t <= hyperperiod; t++) {
+            const xPos = marginLeft + t * scale;
+            ctx.beginPath();
+            ctx.moveTo(xPos, axisY);
+            ctx.lineTo(xPos, axisY + 5);
+            ctx.stroke();
+            ctx.fillText(t.toString(), xPos - 3, axisY + 18);
+        }
     }
     
     function runScheduler(schedulerType) {
-      const hyperperiod = getHyperperiod();
-      if (hyperperiod === 0) {
-        alert("No tasks available to schedule!");
-        return;
-      }
-      
-      let simTasks = tasks.map(task => ({ ...task }));
-      
-      // For RMS, set deadlines equal to periods.
-      if (schedulerType === "rms") {
-        simTasks.forEach(task => {
-          task.deadline = task.period;
-          task.nextDeadline = task.period;
+        const hyperperiod = getHyperperiod();
+        if (hyperperiod === 0) {
+            alert("No tasks available to schedule!");
+            return;
+        }
+        
+        let simTasks = tasks.map(task => ({ ...task }));
+        
+        // For RMS, set deadlines equal to periods.
+        if (schedulerType === "rms") {
+            simTasks.forEach(task => {
+                task.deadline = task.period;
+                task.nextDeadline = task.period;
+            });
+        }
+        
+        let currentTime = 0;
+        let events = [];
+        let currentLabel = "";
+        let eventStart = currentTime;
+        
+        while (currentTime < hyperperiod) {
+            let available = simTasks.filter(task =>
+                currentTime >= task.nextArrival &&
+                currentTime < task.nextDeadline &&
+                task.remaining > 0
+            );
+            
+            available.sort((a, b) => a.nextDeadline - b.nextDeadline);
+            let runningTask = available.length > 0 ? available[0] : null;
+            let newLabel = runningTask ? `task ${runningTask.id}` : "idle";
+            
+            if (newLabel !== currentLabel) {
+                if (currentLabel !== "") {
+                    events.push({ start: eventStart, end: currentTime, label: currentLabel });
+                }
+                currentLabel = newLabel;
+                eventStart = currentTime;
+            }
+            
+            if (!runningTask) {
+                let nextArrivals = simTasks.map(t => t.nextArrival).filter(t => t > currentTime);
+                let nextEvent = nextArrivals.length ? Math.min(...nextArrivals) : hyperperiod;
+                currentTime = nextEvent;
+                continue;
+            }
+            
+            let finishTime = currentTime + runningTask.remaining;
+            let nextArrivalEvent = Infinity;
+            simTasks.forEach(t => {
+                if (t.nextArrival > currentTime && t.nextArrival < finishTime) {
+                    nextArrivalEvent = Math.min(nextArrivalEvent, t.nextArrival);
+                }
+            });
+            
+            let nextEventTime = Math.min(finishTime, nextArrivalEvent);
+            if (nextEventTime > hyperperiod) {
+                nextEventTime = hyperperiod;
+            }
+            
+            let delta = nextEventTime - currentTime;
+            runningTask.remaining -= delta;
+            currentTime = nextEventTime;
+            
+            if (runningTask.remaining <= 1e-9) {
+                runningTask.remaining = runningTask.executionTime;
+                runningTask.nextArrival += runningTask.period;
+                runningTask.nextDeadline = (schedulerType === "edf")
+                    ? runningTask.nextArrival + runningTask.deadline
+                    : runningTask.nextArrival + runningTask.period;
+            }
+        }
+        
+        if (currentTime > eventStart) {
+            events.push({ start: eventStart, end: hyperperiod, label: currentLabel });
+        }
+        
+        let log = `${schedulerType.toUpperCase()} Scheduling Output (Hyperperiod: ${hyperperiod}ms):\n`;
+        events.forEach(ev => {
+            log += `time ${ev.start.toFixed(1)} to ${ev.end.toFixed(1)}: ${ev.label}\n`;
         });
-      }
-      
-      let currentTime = 0;
-      let events = [];
-      let currentLabel = "";
-      let eventStart = currentTime;
-      
-      while (currentTime < hyperperiod) {
-        let available = simTasks.filter(task =>
-          currentTime >= task.nextArrival &&
-          currentTime < task.nextDeadline &&
-          task.remaining > 0
-        );
+        document.getElementById("output").textContent = log;
         
-        available.sort((a, b) => a.nextDeadline - b.nextDeadline);
-        let runningTask = available.length > 0 ? available[0] : null;
-        let newLabel = runningTask ? `task ${runningTask.id}` : "idle";
-        
-        if (newLabel !== currentLabel) {
-          if (currentLabel !== "") {
-            events.push({ start: eventStart, end: currentTime, label: currentLabel });
-          }
-          currentLabel = newLabel;
-          eventStart = currentTime;
-        }
-        
-        if (!runningTask) {
-          let nextArrivals = simTasks.map(t => t.nextArrival).filter(t => t > currentTime);
-          let nextEvent = nextArrivals.length ? Math.min(...nextArrivals) : hyperperiod;
-          currentTime = nextEvent;
-          continue;
-        }
-        
-        let finishTime = currentTime + runningTask.remaining;
-        let nextArrivalEvent = Infinity;
-        simTasks.forEach(t => {
-          if (t.nextArrival > currentTime && t.nextArrival < finishTime) {
-            nextArrivalEvent = Math.min(nextArrivalEvent, t.nextArrival);
-          }
-        });
-        
-        let nextEventTime = Math.min(finishTime, nextArrivalEvent);
-        if (nextEventTime > hyperperiod) {
-          nextEventTime = hyperperiod;
-        }
-        
-        let delta = nextEventTime - currentTime;
-        runningTask.remaining -= delta;
-        currentTime = nextEventTime;
-        
-        if (runningTask.remaining <= 1e-9) {
-          runningTask.remaining = runningTask.executionTime;
-          runningTask.nextArrival += runningTask.period;
-          runningTask.nextDeadline = (schedulerType === "edf")
-            ? runningTask.nextArrival + runningTask.deadline
-            : runningTask.nextArrival + runningTask.period;
-        }
-      }
-      
-      if (currentTime > eventStart) {
-        events.push({ start: eventStart, end: hyperperiod, label: currentLabel });
-      }
-      
-      let log = `${schedulerType.toUpperCase()} Scheduling Output (Hyperperiod: ${hyperperiod}ms):\n`;
-      events.forEach(ev => {
-        log += `time ${ev.start.toFixed(1)} to ${ev.end.toFixed(1)}: ${ev.label}\n`;
-      });
-      document.getElementById("output").textContent = log;
-      
-      lastEvents = events;
-      drawGanttChart(events, hyperperiod);
+        lastEvents = events;
+        drawGanttChart(events, hyperperiod);
     }
 
     window.addEventListener('resize', () => {
-      const hyperperiod = getHyperperiod();
-      if (hyperperiod && lastEvents.length > 0) {
-        drawGanttChart(lastEvents, hyperperiod);
-      }
+        const hyperperiod = getHyperperiod();
+        if (hyperperiod && lastEvents.length > 0) {
+            drawGanttChart(lastEvents, hyperperiod);
+        }
     });
-  </script>
+</script>
+
+  
 </body>
 </html>
