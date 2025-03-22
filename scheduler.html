@@ -21,7 +21,7 @@
       white-space: pre-wrap;
       word-wrap: break-word;
     }
-    /* Make the Gantt container scrollable horizontally */
+   
     #ganttContainer {
       margin-top: 20px;
       text-align: center;
@@ -32,7 +32,7 @@
     #ganttChart {
       height: 200px;
     }
-    /* Custom scrollbar styling for WebKit browsers */
+    
     #ganttContainer::-webkit-scrollbar {
       height: 8px;
     }
@@ -48,7 +48,7 @@
     background: rgba(255, 75, 92, 0.2);
     color: #ff4b5c;
     border: 1.5px solid rgba(237, 96, 110, 0.5);
-    padding: 4px 8px;  /* Even smaller height */
+    padding: 4px 8px; 
     margin: 8px;
     width: 100px;
     /* margin-left: 10px; */
@@ -74,14 +74,14 @@
     box-shadow: 1px 2px 6px rgba(255, 75, 92, 0.5);
 }
 .edit-btn {
-    /* background: rgba(75, 255, 92, 0.2); */
+    
     background: rgb(71, 255, 71);
     color: green;
     border: 1.5px solid green;
-    padding: 4px 8px;  /* Even smaller height */
+    padding: 4px 8px;  
     margin: 8px;
     width: 100px;
-    /* margin-left: 10px; */
+   
     border-radius: 8px; 
     cursor: pointer;
     font-weight: 600;
@@ -108,7 +108,7 @@
 
   </style>
 </head>
-<body class="bg-gray-100 text-gray-900">
+<body class="bg-blue-100 text-gray-900">
   <header class="bg-blue-600 text-white p-4 text-center text-2xl font-bold">
     Adaptive OS Scheduler (EDF & RMS)
   </header>
@@ -132,7 +132,7 @@
       </button>
     </div>
 
-    <!-- Scheduler Buttons -->
+    
     <div class="mt-6 bg-white shadow-lg p-6 rounded-lg max-w-md mx-auto">
       <button onclick="runScheduler('edf')" class="bg-blue-500 text-white px-6 py-2 rounded-lg w-full hover:bg-blue-600 mb-2">
         Run EDF Scheduler
@@ -142,19 +142,16 @@
       </button>
     </div>
 
-    <!-- Task Queue Display -->
     <div class="mt-6 bg-white shadow-lg p-6 rounded-lg max-w-md mx-auto">
       <h2 class="text-2xl font-semibold text-center">Task Queue</h2>
       <div id="taskList" class="mt-4"></div>
     </div>
 
-    <!-- Scheduler Output -->
     <div class="mt-6 bg-gray-800 shadow-lg text-white p-4 rounded-lg max-w-lg mx-auto">
       <h2 class="text-xl text-center">Scheduler Output</h2>
       <pre id="output" class="bg-gray-900 text-green-400 p-4 mt-4 rounded-lg overflow-auto h-48"></pre>
     </div>
     
-    <!-- Gantt Chart Container -->
     <h2 class="text-xl font-semibold text-center mt-6">Gantt Chart</h2>
     <div id="ganttContainer" class="max-w-lg bg-gray-300 rounded-lg shadow-lg mx-auto">
       <div class="canvas-wrapper">
@@ -169,7 +166,7 @@
 
   <script>
     let tasks = [];
-    let lastEvents = []; // Cache events for redraw on resize
+    let lastEvents = []; 
 
     // Utility functions.
     function gcd(a, b) {
@@ -230,15 +227,15 @@
         // Task container
         const taskDiv = document.createElement("div");
         taskDiv.classList.add("task-box");
-        taskDiv.setAttribute("data-task-id", task.id); // Store task ID in div for easy removal
+        taskDiv.setAttribute("data-task-id", task.id); 
         taskDiv.innerHTML = `Task ${task.id} - Execution: ${task.executionTime}ms - Deadline: ${task.deadline}ms - Period: ${task.period}`;
     
-        // Edit button
+        
         const editBtn = document.createElement("button");
         editBtn.innerText = "Edit";
         editBtn.classList.add("edit-btn");
 
-        // Edit task on button click
+        
         editBtn.onclick = function () {
             const newExec = prompt("Enter new execution time", task.executionTime);
             const newDeadline = prompt("Enter new deadline", task.deadline);
@@ -257,42 +254,42 @@
             }
         };
 
-        // Delete button
+       
         const deleteBtn = document.createElement("button");
         deleteBtn.innerText = "Delete";
         deleteBtn.classList.add("delete-btn");
     
-        // Delete task on button click
+        
         deleteBtn.onclick = function () {
-            taskDiv.remove(); // Remove from UI
-            tasks = tasks.filter(t => t.id !== task.id); // Remove from tasks array
+            taskDiv.remove(); 
+            tasks = tasks.filter(t => t.id !== task.id);
         };
 
-        // Append buttons to task
+       
         taskDiv.appendChild(editBtn);
         taskDiv.appendChild(deleteBtn);
         document.getElementById("taskList").appendChild(taskDiv);
 
-        // Clear input fields
+        
         document.getElementById("taskId").value = "";
         document.getElementById("executionTime").value = "";
         document.getElementById("deadline").value = "";
         document.getElementById("period").value = "";
     }
 
-    // Draw the Gantt chart on the canvas using the event intervals.
+    
     function drawGanttChart(events, hyperperiod) {
         const canvas = document.getElementById("ganttChart");
         const ctx = canvas.getContext("2d");
 
-        // Set canvas width based on container width for responsiveness.
+        
         const containerWidth = document.getElementById("ganttContainer").offsetWidth;
         canvas.width = Math.max(containerWidth, 1200);
         canvas.height = 200;
         
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         
-        // Define margins so that 0 and hyperperiod labels are visible.
+        
         const marginLeft = 30;
         const marginRight = 10;
         const usableWidth = canvas.width - marginLeft - marginRight;
@@ -300,7 +297,7 @@
         const barHeight = 40;
         const y = (canvas.height - barHeight) / 2;
         
-        // Predefined color for idle; assign random colors for tasks.
+        
         const colors = { "idle": "#cccccc" };
         events.forEach(ev => {
             if (ev.label !== "idle" && !colors[ev.label]) {
