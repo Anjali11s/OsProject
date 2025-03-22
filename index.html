@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Adaptive OS Scheduler for Real-Time Systems</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-50 text-gray-900 font-sans">
+
+    <!-- Header -->
+    <header class="fixed top-0 left-0 w-full bg-blue-600 text-white py-6 shadow-lg">
+        <div class="max-w-7xl mx-auto px-6 sm:px-8 flex justify-between items-center">
+            <h1 class="text-4xl font-extrabold">Adaptive OS Scheduler</h1>
+            <nav>
+                <ul class="flex space-x-6">
+                    <li><a href="#" class="hover:text-gray-200">Home</a></li>
+                    <li><a href="#features" class="hover:text-gray-200">Features</a></li>
+                    <li><a href="#algorithm" class="hover:text-gray-200">Algorithm</a></li>
+                    <li><a href="#contact" class="hover:text-gray-200">Contact Us</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="mt-20">
+        <!-- Hero Section -->
+        <section class="bg-blue-100 text-center pt-40 pb-20">
+            <div class="max-w-7xl mx-auto px-6 sm:px-8">
+                <h2 class="text-3xl font-semibold text-gray-800">Dynamic OS Scheduler for Real-Time Systems</h2>
+                <p class="mt-4 text-lg text-gray-600">Adjusting priorities in real-time to optimize performance based on workload and deadlines.</p>
+                <!-- <a href="https://anjali11s.github.io/OsProject/" class="mt-8 inline-block bg-blue-600 text-white py-3 px-8 rounded-lg hover:bg-blue-700 transition">Explore the Scheduler</a> -->
+                <a href="scheduler.html" class="mt-8 inline-block bg-blue-600 text-white py-3 px-8 rounded-lg hover:bg-blue-700 transition">Explore the Scheduler</a>
+
+            </div>
+        </section>
+
+        <!-- Features Section -->
+        <section id="features" class="py-16 bg-white pt-40">
+            <div class="max-w-7xl mx-auto px-6 sm:px-8 text-center">
+                <h3 class="text-2xl font-semibold text-gray-800">Key Features</h3>
+                <div class="mt-8 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                    <div class="p-6 border rounded-lg shadow-lg hover:shadow-xl transition">
+                        <h4 class="text-xl font-semibold text-blue-600">Dynamic Priorities</h4>
+                        <p class="mt-2 text-gray-600">Automatically adjusts task priorities based on current system workloads.</p>
+                    </div>
+                    <div class="p-6 border rounded-lg shadow-lg hover:shadow-xl transition">
+                        <h4 class="text-xl font-semibold text-blue-600">Real-Time Scheduling</h4>
+                        <p class="mt-2 text-gray-600">Ensures tasks are scheduled based on strict deadlines and real-time requirements.</p>
+                    </div>
+                    <div class="p-6 border rounded-lg shadow-lg hover:shadow-xl transition">
+                        <h4 class="text-xl font-semibold text-blue-600">Workload Adaptation</h4>
+                        <p class="mt-2 text-gray-600">Adjusts to changing system workload dynamically, enhancing efficiency.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Algorithm Section -->
+<section id="algorithm" class="py-16 bg-blue-50 pt-40">
+    <h3 class="text-2xl font-semibold text-gray-800 text-center">Algorithm Overview</h3>
+    <div class="max-w-7xl mx-auto px-6 sm:px-8 text-left">
+        <p class="mt-4 text-lg text-gray-600">Our adaptive scheduling algorithm adjusts priorities in real-time based on workload changes and deadlines. Below are the two key algorithms implemented:</p>
+
+        <!-- RMS Section -->
+        <div class="mt-12 bg-white shadow-lg p-6 rounded-lg">
+            <h4 class="text-2xl font-semibold text-blue-600">Rate-Monotonic Scheduling (RMS)</h4>
+            <p class="mt-4 text-gray-600">Rate-Monotonic Scheduling (RMS) is a fixed-priority algorithm where tasks with shorter periods (i.e., tasks that need to execute more frequently) are assigned higher priorities. It is optimal for static task sets in real-time systems.</p>
+            <ul class="mt-4 text-left text-gray-600 list-disc pl-6">
+                <li>Priority is assigned based on task period: the shorter the period, the higher the priority.</li>
+                <li>Best suited for periodic tasks with fixed deadlines.</li>
+                <li>Optimal for systems where tasks do not change dynamically.</li>
+                <li>Used in systems where predictability and deadlines are key.</li>
+            </ul>
+        </div>
+
+        <!-- EDF Section -->
+        <div class="mt-12 bg-white shadow-lg p-6 rounded-lg">
+            <h4 class="text-2xl font-semibold text-blue-600">Earliest Deadline First (EDF)</h4>
+            <p class="mt-4 text-gray-600">Earliest Deadline First (EDF) is a dynamic priority algorithm where tasks with the earliest deadlines are given the highest priority. It is optimal for systems where tasks may vary and deadlines can be flexible.</p>
+            <ul class="mt-4 text-left text-gray-600 list-disc pl-6">
+                <li>Priority is based on the task's deadline: the earlier the deadline, the higher the priority.</li>
+                <li>Best suited for systems where tasks have varying deadlines.</li>
+                <li>Can adapt dynamically to workload changes.</li>
+                <li>Optimal for systems where deadlines are more critical than periodicity.</li>
+            </ul>
+        </div>
+    </div>
+</section>
+
+
+        <!-- Contact Section -->
+        <!-- Contact Section -->
+<section id="contact" class="py-16 bg-white">
+    <div class="max-w-7xl mx-auto px-6 sm:px-8 text-center">
+        <h3 class="text-2xl font-semibold text-gray-800">Contact Us</h3>
+        <p class="mt-4 text-lg text-gray-600">Have questions or feedback? Reach out to us!</p>
+        <form id="contact-form" action="#" method="POST" class="mt-8 max-w-lg mx-auto">
+            <div class="flex space-x-4">
+                <input type="text" name="name" placeholder="Your Name" id="name" class="p-4 w-full border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+                <input type="email" name="email" placeholder="Your Email" id="email" class="p-4 w-full border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+            </div>
+            <textarea name="message" placeholder="Your Message" id="message" rows="4" class="mt-4 p-4 w-full border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500" required></textarea>
+            <button type="submit" class="mt-6 inline-block bg-blue-600 text-white py-3 px-8 rounded-lg hover:bg-blue-700 transition">Send Message</button>
+        </form>
+
+        <!-- Success Message -->
+        <div id="success-message" class="mt-8 hidden bg-green-100 text-green-700 p-4 rounded-lg">
+            <p>Your message has been forwarded. Thank you for your valuable time!</p>
+        </div>
+    </div>
+</section>
+
+<script>
+    // JavaScript to handle form submission and display success message
+    document.getElementById('contact-form').addEventListener('submit', function(event) {
+        event.preventDefault(); // Prevent the form from submitting normally
+
+        // Hide the form
+        document.getElementById('contact-form').style.display = 'none';
+
+        // Show success message
+        document.getElementById('success-message').classList.remove('hidden');
+    });
+</script>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-gray-800 text-white py-8">
+        <div class="max-w-7xl mx-auto px-6 sm:px-8 text-center">
+            <p>&copy; 2025 Your Name. All rights reserved.</p>
+        </div>
+    </footer>
+
+</body>
+</html>
