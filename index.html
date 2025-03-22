@@ -7,21 +7,21 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
     .task-box {
-      background: #f4f4f4;
+      background: #faf5f5;
       padding: 10px;
       margin: 5px 0;
       border-radius: 5px;
       transition: transform 0.2s ease, box-shadow 0.2s ease;
     }
-    .task-box:hover {
+    /* .task-box:hover {
       transform: scale(1.02);
       box-shadow: 0 8px 16px rgba(0, 0, 0, 0.4);
-    }
+    } */
     pre {
       white-space: pre-wrap;
       word-wrap: break-word;
     }
-    /* Make the Gantt container scrollable horizontally and keep rounded corners */
+    /* Make the Gantt container scrollable horizontally */
     #ganttContainer {
       margin-top: 20px;
       text-align: center;
@@ -29,7 +29,6 @@
       width: 100%;
       border-radius: 10px;
     }
-    /* Canvas will be drawn wider than container to accommodate large hyperperiods */
     #ganttChart {
       height: 200px;
     }
@@ -45,6 +44,38 @@
       background: #cccccc;
       border-radius: 10px;
     }
+    .delete-btn {
+    background: rgba(255, 75, 92, 0.2);
+    color: #ff4b5c;
+    border: 1.5px solid rgba(237, 96, 110, 0.5);
+    padding: 4px 8px;  /* Even smaller height */
+    margin: 8px;
+    width: 100px;
+    /* margin-left: 10px; */
+    border-radius: 8px; 
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 14px;
+    transition: all 0.2s ease-in-out;
+    backdrop-filter: blur(5px);
+    box-shadow: 1px 2px 6px rgba(255, 75, 92, 0.25);
+}
+
+.delete-btn:hover {
+    background: rgba(255, 75, 92, 0.35);
+    color: white;
+    border: 1.5px solid rgba(255, 75, 92, 0.7);
+    box-shadow: 2px 3px 8px rgba(255, 75, 92, 0.4);
+    transform: scale(1.05); 
+}
+
+.delete-btn:active {
+    transform: scale(0.95);
+    box-shadow: 1px 2px 6px rgba(255, 75, 92, 0.5);
+}
+
+
+
   </style>
 </head>
 <body class="bg-gray-100 text-gray-900">
@@ -56,7 +87,7 @@
     <h1 class="text-3xl font-semibold text-center mb-4">Real-Time Scheduler</h1>
     <p class="text-lg text-center">Dynamically adjusts priorities using EDF and RMS scheduling.</p>
     
-    <!-- Task Input Section -->
+    
     <div class="mt-6 bg-white shadow-lg p-6 rounded-lg max-w-md mx-auto">
       <h2 class="text-2xl font-semibold text-center">Add Task</h2>
       <input id="taskId" type="number" placeholder="Task ID" class="border p-2 m-2 rounded w-full" />
@@ -128,19 +159,27 @@
       return hyper;
     }
     
+    function deleteTask(event) {
+        event.target.parentElement.remove();
+    }
+
+    function clearTasks() {
+        document.getElementById("taskList").innerHTML = "";
+    }
+
     function addTask() {
-      const id = document.getElementById("taskId").value;
-      const exec = parseFloat(document.getElementById("executionTime").value);
-      const deadlineInput = document.getElementById("deadline").value;
-      const period = parseInt(document.getElementById("period").value);
-      
-      if (!id || isNaN(exec) || isNaN(period)) {
+    const id = document.getElementById("taskId").value;
+    const exec = parseFloat(document.getElementById("executionTime").value);
+    const deadlineInput = document.getElementById("deadline").value;
+    const period = parseInt(document.getElementById("period").value);
+    
+    if (!id || isNaN(exec) || isNaN(period)) {
         alert("Please fill Task ID, Execution Time, and Period fields.");
         return;
-      }
-      
-      let deadline = deadlineInput ? parseInt(deadlineInput) : period;
-      const task = {
+    }
+    
+    let deadline = deadlineInput ? parseInt(deadlineInput) : period;
+    const task = {
         id: parseInt(id),
         executionTime: exec,
         deadline: deadline,
@@ -148,20 +187,38 @@
         remaining: exec,
         nextArrival: 0,
         nextDeadline: deadline
-      };
-      tasks.push(task);
-      
-      document.getElementById("taskList").innerHTML += `
-        <div class="task-box">
-          Task ${task.id} - Execution: ${task.executionTime}ms - Deadline: ${task.deadline}ms - Period: ${task.period}ms
-        </div>`;
-      
-      // Clear input fields.
-      document.getElementById("taskId").value = "";
-      document.getElementById("executionTime").value = "";
-      document.getElementById("deadline").value = "";
-      document.getElementById("period").value = "";
-    }
+    };
+    tasks.push(task);
+
+    // Task container
+    const taskDiv = document.createElement("div");
+    taskDiv.classList.add("task-box");
+    taskDiv.innerHTML = `Task ${task.id} - Execution: ${task.executionTime}ms - Deadline: ${task.deadline}ms - Period: ${task.period}`;
+    
+    // Delete button
+    const deleteBtn = document.createElement("button");
+    deleteBtn.innerText = "Delete";
+    deleteBtn.classList.add("delete-btn");
+    
+    // Delete task on button click
+    deleteBtn.onclick = function () {
+        taskDiv.remove(); // Remove from UI
+        tasks.splice(tasks.indexOf(task), 1); // Remove from array
+    };
+
+    // Append button to task
+    taskDiv.appendChild(deleteBtn);
+    document.getElementById("taskList").appendChild(taskDiv);
+
+    // Clear input fields
+    document.getElementById("taskId").value = "";
+    document.getElementById("executionTime").value = "";
+    document.getElementById("deadline").value = "";
+    document.getElementById("period").value = "";
+}
+
+
+
     
     function clearTasks() {
       tasks = [];
@@ -202,7 +259,6 @@
         }
       });
       
-      // Draw each event as a rectangle.
       events.forEach(ev => {
         const xStart = marginLeft + ev.start * scale;
         const width = (ev.end - ev.start) * scale;
@@ -218,7 +274,7 @@
         ctx.fillText(ev.label, xStart + 5, y + barHeight / 2 + 5);
       });
       
-      // Draw the time axis.
+      // the time axis.
       ctx.fillStyle = "#000";
       ctx.font = "12px Arial";
       const axisY = y + barHeight;
@@ -238,8 +294,6 @@
       }
     }
     
-    // Event-driven simulation of EDF (or RMS) scheduling until the hyperperiod.
-    // This version collects events as intervals.
     function runScheduler(schedulerType) {
       const hyperperiod = getHyperperiod();
       if (hyperperiod === 0) {
