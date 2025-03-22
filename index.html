@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Adaptive OS Scheduler</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    .task-box {
+      background: #f4f4f4;
+      padding: 10px;
+      margin: 5px 0;
+      border-radius: 5px;
+    }
+    pre {
+      white-space: pre-wrap;
+      word-wrap: break-word;
+    }
+    /* Basic styles for canvas container */
+    #ganttContainer {
+      margin-top: 20px;
+      text-align: center;
+    }
+  </style>
+</head>
+<body class="bg-gray-100 text-gray-900">
+  <header class="bg-blue-600 text-white p-4 text-center text-2xl font-bold">
+    Adaptive OS Scheduler (EDF & RMS)
+  </header>
+  <main class="container mx-auto p-6">
+    <h1 class="text-3xl font-semibold text-center mb-4">Real-Time Scheduler</h1>
+    <p class="text-lg text-center">Dynamically adjusts priorities using EDF and RMS scheduling.</p>
+    
+    <div class="mt-6 bg-white shadow-lg p-6 rounded-lg max-w-md mx-auto">
+      <h2 class="text-2xl font-semibold text-center">Add Task</h2>
+      <input id="taskId" type="number" placeholder="Task ID" class="border p-2 m-2 rounded w-full" />
+      <input id="executionTime" type="number" step="0.1" placeholder="Execution Time (ms)" class="border p-2 m-2 rounded w-full" />
+      <input id="deadline" type="number" placeholder="Deadline (ms) [Optional for RMS]" class="border p-2 m-2 rounded w-full" />
+      <input id="period" type="number" placeholder="Period (ms)" class="border p-2 m-2 rounded w-full" />
+      <button onclick="addTask()" class="mt-2 bg-green-500 text-white px-4 py-2 rounded w-full hover:bg-green-600">
+        Add Task
+      </button>
+      <button onclick="clearTasks()" class="mt-2 bg-red-500 text-white px-4 py-2 rounded w-full hover:bg-red-600">
+        Clear Tasks
+      </button>
+    </div>
+
+    <div class="mt-6 bg-white shadow-lg p-6 rounded-lg max-w-md mx-auto">
+      <button onclick="runScheduler('edf')" class="bg-blue-500 text-white px-6 py-2 rounded-lg w-full hover:bg-blue-600 mb-2">
+        Run EDF Scheduler
+      </button>
+      <button onclick="runScheduler('rms')" class="bg-purple-500 text-white px-6 py-2 rounded-lg w-full hover:bg-purple-600">
+        Run RMS Scheduler
+      </button>
+    </div>
+
+    <div class="mt-6 bg-white shadow-lg p-6 rounded-lg max-w-md mx-auto">
+      <h2 class="text-2xl font-semibold text-center">Task Queue</h2>
+      <div id="taskList" class="mt-4"></div>
+    </div>
+
+    <div class="mt-6 bg-gray-800 text-white p-4 rounded-lg max-w-lg mx-auto">
+      <h2 class="text-xl text-center">Scheduler Output</h2>
+      <pre id="output" class="bg-gray-900 text-green-400 p-4 mt-4 rounded-lg overflow-auto h-48"></pre>
+    </div>
+
+    <!-- Gantt Chart Container -->
+    <div id="ganttContainer" class="max-w-lg mx-auto">
+      <h2 class="text-xl font-semibold text-center mt-6">Gantt Chart</h2>
+      <canvas id="ganttChart" width="600" height="150" class="border mt-4"></canvas>
+    </div>
+  </main>
+  
+  <footer class="bg-gray-800 text-white text-center p-3 mt-6">
+    &copy; 2025 Adaptive OS Scheduler | All Rights Reserved
+  </footer>
+
+  <script>
+    let tasks = [];
+    
+    // Utility functions.
+    function gcd(a, b) {
+      return b === 0 ? a : gcd(b, a % b);
+    }
+    
+    function lcm(a, b) {
+      return (a * b) / gcd(a, b);
+    }
+    
+    function getHyperperiod() {
+      if (tasks.length === 0) return 0;
+      let hyper = tasks[0].period;
+      for (let i = 1; i < tasks.length; i++) {
+        hyper = lcm(hyper, tasks[i].period);
+      }
+      return hyper;
+    }
+    
+    function addTask() {
+      const id = document.getElementById("taskId").value;
+      const exec = parseFloat(document.getElementById("executionTime").value);
+      const deadlineInput = document.getElementById("deadline").value;
+      const period = parseInt(document.getElementById("period").value);
+      
+      if (!id || isNaN(exec) || isNaN(period)) {
+        alert("Please fill Task ID, Execution Time, and Period fields.");
+        return;
+      }
+      
+      let deadline = deadlineInput ? parseInt(deadlineInput) : period;
+      const task = {
+        id: parseInt(id),
+        executionTime: exec,
+        deadline: deadline,
+        period: period,
+        remaining: exec,
+        nextArrival: 0,
+        nextDeadline: deadline
+      };
+      tasks.push(task);
+      
+      document.getElementById("taskList").innerHTML += `<div class="task-box">
+          Task ${task.id} - Execution: ${task.executionTime}ms - Deadline: ${task.deadline}ms - Period: ${task.period}ms
+        </div>`;
+      
+      // Clear input fields.
+      document.getElementById("taskId").value = "";
+      document.getElementById("executionTime").value = "";
+      document.getElementById("deadline").value = "";
+      document.getElementById("period").value = "";
+    }
+    
+    function clearTasks() {
+      tasks = [];
+      document.getElementById("taskList").innerHTML = '';
+      document.getElementById("output").textContent = '';
+      let canvas = document.getElementById("ganttChart");
+      let ctx = canvas.getContext("2d");
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+    }
+    
+    // Draw the Gantt chart on the canvas using the events.
+    function drawGanttChart(events, hyperperiod) {
+      const canvas = document.getElementById("ganttChart");
+      const ctx = canvas.getContext("2d");
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      
+      // Define scale: pixels per ms.
+      const scale = canvas.width / hyperperiod;
+      const barHeight = 30;
+      const y = canvas.height / 2 - barHeight / 2;
+      
+      // Predefine colors for idle; assign random colors for tasks.
+      const colors = { "idle": "#cccccc" };
+      events.forEach(ev => {
+        if (ev.label !== "idle" && !colors[ev.label]) {
+          colors[ev.label] = '#' + Math.floor(Math.random() * 16777215).toString(16);
+        }
+      });
+      
+      // Draw each event as a rectangle.
+      events.forEach(ev => {
+        const x = ev.start * scale;
+        const width = (ev.end - ev.start) * scale;
+        ctx.fillStyle = colors[ev.label] || "#000000";
+        ctx.fillRect(x, y, width, barHeight);
+        ctx.strokeStyle = "#000";
+        ctx.strokeRect(x, y, width, barHeight);
+        // Draw the label.
+        ctx.fillStyle = "#000";
+        ctx.font = "12px Arial";
+        ctx.fillText(ev.label, x + 5, y + barHeight / 2 + 4);
+      });
+      
+      // Draw a time axis.
+      ctx.fillStyle = "#000";
+      ctx.font = "10px Arial";
+      for (let t = 0; t <= hyperperiod; t++) {
+        const x = t * scale;
+        ctx.beginPath();
+        ctx.moveTo(x, y + barHeight);
+        ctx.lineTo(x, y + barHeight + 5);
+        ctx.stroke();
+        ctx.fillText(t, x - 3, y + barHeight + 15);
+      }
+    }
+    
+    // Event-driven simulation of EDF scheduling until the hyperperiod.
+    // This version collects events as intervals.
+    function runScheduler(schedulerType) {
+      const hyperperiod = getHyperperiod();
+      if (hyperperiod === 0) {
+        alert("No tasks available to schedule!");
+        return;
+      }
+      
+      let currentTime = 0;
+      let events = []; // Array to store intervals: { start, end, label }
+      
+      // For RMS, use period as deadline.
+      if (schedulerType === "rms") {
+        tasks.forEach(task => {
+          task.deadline = task.period;
+          task.nextDeadline = task.period;
+        });
+      }
+      
+      // Create a deep copy for simulation.
+      let taskQueue = tasks.map(task => ({ ...task }));
+      
+      let currentLabel = "";
+      let eventStart = currentTime;
+      
+      while (currentTime < hyperperiod) {
+        // Determine available tasks.
+        let available = taskQueue.filter(task =>
+          currentTime >= task.nextArrival &&
+          currentTime < task.nextDeadline &&
+          task.remaining > 0
+        );
+        
+        // Select the running task (EDF: lowest nextDeadline).
+        available.sort((a, b) => a.nextDeadline - b.nextDeadline);
+        let runningTask = available.length > 0 ? available[0] : null;
+        let newLabel = runningTask ? `task ${runningTask.id}` : "idle";
+        
+        // If label changes, record the previous event.
+        if (newLabel !== currentLabel) {
+          if (currentLabel !== "") {
+            events.push({ start: eventStart, end: currentTime, label: currentLabel });
+          }
+          currentLabel = newLabel;
+          eventStart = currentTime;
+        }
+        
+        if (!runningTask) {
+          // If idle, jump to the next arrival or hyperperiod.
+          let nextArrivals = taskQueue.map(task => task.nextArrival).filter(t => t > currentTime);
+          let nextEvent = nextArrivals.length ? Math.min(...nextArrivals) : hyperperiod;
+          currentTime = nextEvent;
+          continue;
+        }
+        
+        // Calculate finish time if the task runs uninterrupted.
+        let finishTime = currentTime + runningTask.remaining;
+        
+        // Check for a next arrival event that might preempt.
+        let nextArrivalEvent = Infinity;
+        taskQueue.forEach(task => {
+          if (task.nextArrival > currentTime && task.nextArrival < finishTime) {
+            nextArrivalEvent = Math.min(nextArrivalEvent, task.nextArrival);
+          }
+        });
+        
+        let nextEventTime = Math.min(finishTime, nextArrivalEvent);
+        if (nextEventTime > hyperperiod) {
+          nextEventTime = hyperperiod;
+        }
+        
+        let delta = nextEventTime - currentTime;
+        runningTask.remaining -= delta;
+        currentTime = nextEventTime;
+        
+        // If the running task completes its instance.
+        if (runningTask.remaining <= 1e-9) {
+          runningTask.remaining = runningTask.executionTime;
+          runningTask.nextArrival += runningTask.period;
+          runningTask.nextDeadline = schedulerType === "edf"
+            ? runningTask.nextArrival + runningTask.deadline
+            : runningTask.nextArrival + runningTask.period;
+        }
+      }
+      
+      // Finalize the last event.
+      if (currentTime > eventStart) {
+        events.push({ start: eventStart, end: hyperperiod, label: currentLabel });
+      }
+      
+      // Build the textual log.
+      let log = `${schedulerType.toUpperCase()} Scheduling Output (Hyperperiod: ${hyperperiod}ms):\n`;
+      events.forEach(ev => {
+        log += `time ${ev.start.toFixed(1)} to ${ev.end.toFixed(1)}: ${ev.label}\n`;
+      });
+      document.getElementById("output").textContent = log;
+      
+      // Draw the Gantt chart.
+      drawGanttChart(events, hyperperiod);
+    }
+  </script>
+</body>
+</html>
