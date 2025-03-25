@@ -1,24 +1,19 @@
-Adaptive OS Scheduler for Real-Time Systems.
+Adaptive OS Scheduler for Real-Time Systems
 Project Overview
-The Adaptive OS Scheduler for Real-Time Systems dynamically adjusts task priorities to optimize performance based on workload and deadlines. It provides an interactive simulation of real-time scheduling algorithms, ensuring efficient task execution.
+This project focuses on developing an adaptive operating system scheduler designed specifically for real-time systems. The scheduler dynamically adjusts task priorities to optimize system performance based on workload and deadlines. It aims to provide an efficient scheduling mechanism that ensures real-time tasks meet their constraints while maintaining overall system efficiency.
 
-🌟 Features
-🔹 Dynamic Priorities – Automatically adjusts task priorities based on system workload.
-🔹 Real-Time Scheduling – Schedules tasks with strict deadlines and real-time constraints.
-🔹 Workload Adaptation – Adjusts dynamically for enhanced system efficiency.
-🔹 User-Friendly Interface – Clean UI built with HTML, Tailwind CSS, and JavaScript.
+Features
+Dynamic Priority Adjustment: The scheduler modifies task priorities in real time based on system load and deadlines.
 
-🧮 Implemented Scheduling Algorithms
-📌 Rate-Monotonic Scheduling (RMS)
-Assigns higher priority to tasks with shorter periods.
+Real-Time Scheduling: Ensures that tasks are scheduled in a way that meets strict timing constraints.
 
-Best for fixed, periodic tasks where deadlines are predictable.
+Workload Adaptation: The system adapts dynamically to changes in workload, improving performance and resource utilization.
 
-Ensures deadline guarantees if CPU utilization conditions are met.
+Interactive User Interface: A simple and intuitive web-based interface allows users to explore and understand the scheduling process.
 
-📌 Earliest Deadline First (EDF)
-Prioritizes tasks with the earliest deadlines.
+Implemented Scheduling Algorithms
+Rate-Monotonic Scheduling (RMS)
+Rate-Monotonic Scheduling is a fixed-priority algorithm where tasks with shorter execution cycles are assigned higher priority. This approach is well-suited for systems with periodic tasks that do not change frequently. It ensures predictability and guarantees deadlines when system utilization conditions are met.
 
-Works well for dynamic workloads with varying deadlines.
-
-More flexible than RMS but requires efficient scheduling overhead.
+Earliest Deadline First (EDF)
+Earliest Deadline First is a dynamic priority scheduling algorithm that assigns priority based on the task’s deadline. Tasks with the earliest deadlines are executed first. This approach is more flexible than RMS and can adapt to varying workloads, making it suitable for systems with changing deadlines.
