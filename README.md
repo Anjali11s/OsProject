@@ -28,4 +28,13 @@ JavaScript: Implements the scheduling logic and interactive features.
 Live Demo
 [Check the Live Demo!](https://anjali11s.github.io/OsProject/)
 
+Breakdown of Files and Directories
+index.html → This is the landing page, containing the home interface and key features.
+schedular.html → This page contains the scheduler demo/algorithm implementation.
+README.md → The documentation file explaining the project.
+
+
+
+
+
 
