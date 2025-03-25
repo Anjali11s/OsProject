@@ -17,3 +17,15 @@ Rate-Monotonic Scheduling is a fixed-priority algorithm where tasks with shorter
 
 Earliest Deadline First (EDF)
 Earliest Deadline First is a dynamic priority scheduling algorithm that assigns priority based on the task’s deadline. Tasks with the earliest deadlines are executed first. This approach is more flexible than RMS and can adapt to varying workloads, making it suitable for systems with changing deadlines.
+
+Technologies Used
+HTML: Defines the structure of the web pages.
+
+Tailwind CSS: Provides styling for the user interface.
+
+JavaScript: Implements the scheduling logic and interactive features.
+
+Live Demo
+[Check the Live Demo!](https://anjali11s.github.io/OsProject/)
+
+
