@@ -104,16 +104,43 @@
     box-shadow: 1px 2px 6px rgba(75, 255, 92, 0.5);
 }
 
+.home-btn {
+  position: absolute;
+  top: 5px;
+  right: 10px;
+  background: rgba(126, 174, 245, 0.2);
+  color: white;
+  border: 1.5px solid rgba(59, 130, 246, 0.5);
+  padding: 8px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 16px;
+  transition: all 0.2s ease-in-out;
+  backdrop-filter: blur(5px);
+  box-shadow: 1px 2px 6px rgba(59, 130, 246, 0.25);
+}
 
+.home-btn:hover {
+  background: rgba(59, 130, 246, 0.35);
+  color: white;
+  border: 1.5px solid rgba(59, 130, 246, 0.7);
+  box-shadow: 2px 3px 8px rgba(59, 130, 246, 0.4);
+  transform: scale(1.05);
+}
 
-
+.home-btn:active {
+  transform: scale(0.95);
+  box-shadow: 1px 2px 6px rgba(59, 130, 246, 0.5);
+}
     
   </style>
 </head>
 <body class="bg-blue-100 text-gray-900">
-  <header class="bg-blue-600 text-white p-4 text-center text-2xl font-bold">
-    Adaptive OS Scheduler (EDF & RMS)
-  </header>
+  <header class="bg-blue-600 text-white p-4 text-center text-2xl font-bold relative">
+    Adaptive OS Scheduler (EDF & RMS)
+    <a href="index.html" class="home-btn">Home</a>
+  </header>
 
   <main class="container mx-auto p-6">
     <h1 class="text-3xl font-semibold text-center mb-4">Real-Time Scheduler</h1>
